@@ -1,16 +1,25 @@
 package main
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+)
 
 type Book struct {
 	id            int
 	title         string
 	content       string
-	contentLength int
+	contentLength sql.NullInt32
 }
 
 func (b *Book) ToJson() string {
-	return fmt.Sprintf("{\"id\":%d,\"title\":\"%s\",\"content\":\"%s\",\"length\":%d}", b.id, b.title, b.content, b.contentLength)
+	s := fmt.Sprintf("{\"id\":%d,\"title\":\"%s\",\"content\":\"%s\",", b.id, b.title, b.content)
+	if b.contentLength.Valid {
+		s += fmt.Sprintf("\"contentLength\":%d}", b.contentLength.Int32)
+	} else {
+		s += "\"contentLength\":0}"
+	}
+	return s
 }
 func getBookList() []Book {
 	result, _ := _db.Query("SELECT id, title FROM Books")
@@ -20,13 +29,14 @@ func getBookList() []Book {
 		var book Book
 		result.Scan(&book.id, &book.title)
 		bookList = append(bookList, book)
-		// fmt.Println(result)
-		fmt.Printf("id: %d, title: %s\n", book.id, book.title)
 	}
 	return bookList
 }
-func getBookById(id int) Book {
+func getBookById(id int) (Book, error) {
 	var book Book
-	_db.QueryRow("SELECT * FROM Books WHERE id = ?", id).Scan(&book.id, &book.title, &book.content, &book.contentLength)
-	return book
+	err := _db.QueryRow("SELECT id, title, content, contentLength FROM Books WHERE id = ?", id).Scan(&book.id, &book.title, &book.content, &book.contentLength)
+	if err != nil {
+		return book, err
+	}
+	return book, nil
 }

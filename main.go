@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	_ "github.com/mattn/go-sqlite3"
@@ -43,7 +44,12 @@ func main() {
 			json += "]"
 			return c.String(http.StatusOK, json)
 		}
-		return c.String(http.StatusOK, "Hello, World!")
+		id, _ := strconv.Atoi(bookId)
+		book, err := getBookById(id)
+		if err != nil {
+			return c.String(http.StatusNotFound, err.Error())
+		}
+		return c.String(http.StatusOK, book.ToJson())
 	})
 	e.POST("/typing", func(c echo.Context) error {
 		//param: team, bookId, startTime, endTime (UNIX timestamp)
