@@ -11,6 +11,6 @@ CREATE TABLE `Records` (
 	`username`	VARCHAR(20)	NULL,
 	`startTime`	int	NULL,
 	`endTime`	int	NULL,
-	`takenTime`	int	NULL
+	`takenTime`	int	NULL,
+	`score` int NULL
 );
-

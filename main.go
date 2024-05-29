@@ -49,11 +49,14 @@ func main() {
 	})
 	e.POST("/typing", func(c echo.Context) error {
 		c.Response().Header().Add("Access-Control-Allow-Origin", origin)
-		//param: username, bookId, startTime, endTime (UNIX timestamp)
+		//jsondata: username, bookId, startTime, endTime, score
 		// myRank := 0
 		var record Record
 		if err := c.Bind(&record); err != nil {
 			return c.String(http.StatusBadRequest, err.Error())
+		}
+		if record.BookId == 0 || record.Username == "" || record.StartTime == 0 || record.EndTime == 0 || record.Score == 0 {
+			return c.String(http.StatusBadRequest, "bookId, username, startTime, endTime, score should be provided")
 		}
 		if record.TakenTime = record.EndTime - record.StartTime; record.TakenTime < 0 {
 			return c.String(http.StatusBadRequest, "endTime should be greater than startTime")
