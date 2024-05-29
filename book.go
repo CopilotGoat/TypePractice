@@ -22,12 +22,12 @@ func (b *Book) ToJson() string {
 	return s
 }
 func getBookList() []Book {
-	result, _ := _db.Query("SELECT id, title FROM Books")
+	result, _ := _db.Query("SELECT id, title, contentLength FROM Books")
 
 	var bookList []Book
 	for result.Next() {
 		var book Book
-		result.Scan(&book.id, &book.title)
+		result.Scan(&book.id, &book.title, &book.contentLength)
 		bookList = append(bookList, book)
 	}
 	return bookList
