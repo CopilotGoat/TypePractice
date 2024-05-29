@@ -75,7 +75,7 @@ func main() {
 			bookIdInt, limitInt, startRankingInt int
 		)
 		if bookId == "" {
-			return c.String(http.StatusBadRequest, "bookId, limit, startRanking should be provided")
+			return c.String(http.StatusBadRequest, "bookId should be provided")
 		}
 		bookIdInt, _ = strconv.Atoi(bookId)
 		if limit == "" {
