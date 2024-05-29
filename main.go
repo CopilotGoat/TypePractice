@@ -2,20 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	_ "github.com/mattn/go-sqlite3"
 )
-
-type Record struct {
-	username  string
-	book      *Book
-	startTime int
-	endTime   int
-	takenTime int
-}
 
 var _sqlPath = "./data.db"
 var _db *sql.DB
@@ -23,12 +17,14 @@ var _db *sql.DB
 func main() {
 	//make echo server on 80
 	e := echo.New()
+	origin := "*"
 	db, err := sql.Open("sqlite3", _sqlPath)
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
 	_db = db
 	e.GET("/book", func(c echo.Context) error {
+		c.Response().Header().Add("Access-Control-Allow-Origin", origin)
 		//param: bookId
 		bookId := c.QueryParam("bookId")
 		if bookId == "" {
@@ -52,13 +48,56 @@ func main() {
 		return c.String(http.StatusOK, book.ToJson())
 	})
 	e.POST("/typing", func(c echo.Context) error {
-		//param: team, bookId, startTime, endTime (UNIX timestamp)
-		return c.String(http.StatusOK, "Hello, World!")
+		c.Response().Header().Add("Access-Control-Allow-Origin", origin)
+		//param: username, bookId, startTime, endTime (UNIX timestamp)
+		// myRank := 0
+		var record Record
+		if err := c.Bind(&record); err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+		if record.TakenTime = record.EndTime - record.StartTime; record.TakenTime < 0 {
+			return c.String(http.StatusBadRequest, "endTime should be greater than startTime")
+		}
+		if strings.Contains(record.Username, ";") || strings.Contains(record.Username, "--") || strings.Contains(record.Username, "\"") || strings.Contains(record.Username, "'"){
+			return c.String(http.StatusBadRequest, "username should not contain sql")
+		}
+		record.AddToDB()
+		
+		return c.String(http.StatusOK, fmt.Sprintf("{\"rank\": %d}", record.GetMyRanking()))
 	})
 	e.GET("/ranking", func(c echo.Context) error {
-		//return ranking as json
-		//param: limit(몇 팀, 기본값 10), startRanking(몇위부터, 기본값 1)
-		return c.String(http.StatusOK, "Hello, World!")
+		c.Response().Header().Add("Access-Control-Allow-Origin", origin)
+		//param: bookId, limit, startRanking
+		bookId := c.QueryParam("bookId")
+		limit := c.QueryParam("limit")
+		startRanking := c.QueryParam("startRanking")
+		var (
+			bookIdInt, limitInt, startRankingInt int
+		)
+		if bookId == "" {
+			return c.String(http.StatusBadRequest, "bookId, limit, startRanking should be provided")
+		}
+		bookIdInt, _ = strconv.Atoi(bookId)
+		if limit == "" {
+			limitInt = 10
+		} else {
+			limitInt, _ = strconv.Atoi(limit)
+		}
+		if startRanking == "" {
+			startRankingInt = 1
+		} else {
+			startRankingInt, _ = strconv.Atoi(startRanking)
+		}
+		rankings := getRanking(bookIdInt, limitInt, startRankingInt)
+		json := "["
+		for i, record := range rankings {
+			json += record.ToJson()
+			if i != len(rankings)-1 {
+				json += ","
+			}
+		}
+		json += "]";
+		return c.String(http.StatusOK, json)
 	})
 	e.Logger.Fatal(e.Start(":8080"))
 }
