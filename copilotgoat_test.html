@@ -140,9 +140,12 @@
         const errorRateValue = (errorCount / strsize) * 100;
         errorRate.textContent = `Error Rate: ${errorRateValue.toFixed(2)}%`;
 
-        const timeElapsedSeconds = parseFloat(timeElapsed.textContent.split(": ")[1].slice(0, -1));
+        const timeElapsedSeconds = (new Date() - startTime) / 1000;
+        const timeElapsedMinutes = timeElapsedSeconds / 60;
         const characterCount = trimmedText.length;
-        const score = Math.round((2 * (characterCount / 60) + characterCount) * (1 - errorRateValue / 100));
+        const typingSpeed = characterCount / timeElapsedMinutes;
+
+        const score = (2 * typingSpeed + characterCount) * (1 - errorRateValue / 100);
         scoreDisplay.textContent = `Score: ${score.toFixed(2)}`;
 
     }
@@ -186,6 +189,7 @@
 
 </body>
 </html>
+
 
 
 
