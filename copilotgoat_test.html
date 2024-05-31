@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Practice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #referenceText {
+            font-size: 18px;
+            line-height: 1.6;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        #typingArea {
+            width: 100%;
+            height: 150px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            resize: none;
+        }
+        #stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        #stats div {
+            font-size: 16px;
+            color: #555;
+        }
+        #score {
+            font-size: 20px;
+            color: #333;
+            text-align: center;
+        }
+        #display {
+            font-size: 16px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Typing Practice</h1>
+    <div id="referenceText"></div>
+    <div id="stats">
+        <div id="charCount">Character Count (excluding spaces and newlines): 0</div>
+        <div id="errorRate">Error Rate: 0%</div>
+        <div id="timeElapsed">Time Elapsed: 0s</div>
+    </div>
+    <div id="score">Score: 0</div>
+    <textarea id="typingArea" placeholder="Start typing here..."></textarea>
+    <div id="display"></div>
+</div>
+
+<script>
+    const typingArea = document.getElementById('typingArea');
+    const display = document.getElementById('display');
+    const charCount = document.getElementById('charCount');
+    const errorRate = document.getElementById('errorRate');
+    const timeElapsed = document.getElementById('timeElapsed');
+    const referenceTextDiv = document.getElementById('referenceText');
+    const scoreDisplay = document.getElementById('score');
+
+    const referenceText = [
+        "test string1",
+        "test string2"
+    ];
+    let currentLine = 0;
+    let startTime = null;
+    let intervalId = null;
+
+    function displayReferenceText() {
+        referenceTextDiv.innerHTML = referenceText.join('<br>');
+    }
+
+    function updateMetrics() {
+        const text = typingArea.value;
+        const trimmedText = text.replace(/\s+/g, '');
+
+        display.textContent = text;
+        charCount.textContent = `Character Count (excluding spaces and newlines): ${trimmedText.length}`;
+
+        let strsize = 0;
+        for (let i = 0; i < referenceText.length; i++) {
+            strsize += referenceText[i].length;
+        }
+
+        let errorCount = 0;
+        const currentText = text.split('\n');
+        for (let i = 0; i <= currentLine; i++) {
+            if (currentText[i]) {
+                for (let j = 0; j < currentText[i].length; j++) {
+                    if (currentText[i][j] !== referenceText[i][j]) {
+                        errorCount++;
+                    }
+                }
+                if (currentText[i].length < referenceText[i].length) {
+                    errorCount += referenceText[i].length - currentText[i].length;
+                }
+            } else {
+                errorCount += referenceText[i].length;
+            }
+        }
+
+        const errorRateValue = (errorCount / strsize) * 100;
+        errorRate.textContent = `Error Rate: ${errorRateValue.toFixed(2)}%`;
+
+        const timeElapsedSeconds = parseFloat(timeElapsed.textContent.split(": ")[1].slice(0, -1));
+        const characterCount = trimmedText.length;
+        const score = Math.round((2 * (characterCount / 60) + characterCount) * (1 - errorRateValue / 100));
+        scoreDisplay.textContent = `Score: ${score.toFixed(2)}`;
+
+    }
+
+    typingArea.addEventListener('input', () => {
+        if (!startTime) {
+            startTime = new Date();
+            intervalId = setInterval(() => {
+                const currentTime = new Date();
+                const timeDiff = (currentTime - startTime) / 1000;
+                timeElapsed.textContent = `Time Elapsed: ${timeDiff.toFixed(2)}s`;
+            }, 100);
+        }
+
+        updateMetrics();
+    });
+
+    typingArea.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+            if (currentLine < referenceText.length - 1) {
+                currentLine++;
+            } else {
+                clearInterval(intervalId);
+                const endTime = new Date();
+                const timeDiff = (endTime - startTime) / 1000;
+                timeElapsed.textContent = `Time Elapsed: ${timeDiff.toFixed(2)}s`;
+                typingArea.disabled = true;
+            }
+        } else if (event.key === 'Backspace') {
+            const currentText = typingArea.value.split('\n');
+            if (currentText[currentLine] === '' && currentLine > 0) {
+                currentLine--;
+            }
+        }
+
+        updateMetrics();
+    });
+
+    displayReferenceText();
+</script>
+
+</body>
+</html>
+
+
+
