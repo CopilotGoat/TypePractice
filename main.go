@@ -102,5 +102,5 @@ func main() {
 		json += "]";
 		return c.String(http.StatusOK, json)
 	})
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.StartTLS(":8080", "certificate.crt", "private.key"))
 }
