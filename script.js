@@ -13,8 +13,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 	let splittedText=[];
 	let rawIdx = 0, rowIdx = 0, colIdx = 0, baseIdx = 0;
 	let skipLineFeed = false;
-
-	console.log(originalText);
+	let isEndPractice = false;
 
 	for (var i = 0; i < originalText.length; i++) {
 		console.log(textToType.offsetWidth);
@@ -30,11 +29,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
 	}
 
 	function drawUserTypedOutput(){
-		console.log("A", inputArea.innerText.length);
+		const str = inputArea.value;
+		console.log("A", str.length, str);
 
-		colIdx = inputArea.innerText.length - 1;
+		colIdx = str.length - 1;
 		rawIdx = baseIdx + colIdx;
-		userTypedText[rawIdx] = inputArea.innerText[colIdx];
+
+		if(rawIdx >= originalText.length){
+			isEndPractice = true;
+			setTimeout(endPractice, 0);
+			return;
+		}
+
+		userTypedText[rawIdx] = str[colIdx];
 		console.log(userTypedText);
 		console.log("a", colIdx, userTypedText[colIdx-1], userTypedText[colIdx]);;
 
@@ -42,11 +49,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		console.log("C", userTypedText[rawIdx], originalText[rawIdx], userTypedText[baseIdx+colIdx], originalText[baseIdx+colIdx]);
 
 		userTypedOutput.innerHTML = '';
-		for (var i = 0; i < inputArea.innerText.length; i++) {
+		for (var i = 0; i < str.length; i++) {
 			const span = document.createElement('span');
 //			console.log("D", userTypedText[baseIdx+i], originalText[baseIdx+i]);
 			span.classList.add(userTypedText[baseIdx+i] === originalText[baseIdx+i] ? 'correct' : 'incorrect');
-			span.textContent = inputArea.innerText[i];
+			span.textContent = str[i];
 			userTypedOutput.appendChild(span);
 		}
 
@@ -54,47 +61,64 @@ document.addEventListener('DOMContentLoaded', (event) => {
 			skipLineFeed = false;
 			return;
 		}
-		if(inputArea.innerText.length === splittedText[rowIdx].length){
+		if(str.length === splittedText[rowIdx].length){
 			rowIdx++;
 			baseIdx += colIdx+1;
 			colIdx = 0;
 
-			inputArea.innerHTML = '';
+			inputArea.value = '';
 			userTypedOutput.innerHTML = '';
 			drawScreen();
 			return;
 		}
 	}
 
-	document.addEventListener('input', () => {
+	inputArea.addEventListener('input', (event) => {
+		if(isEndPractice)return;
+		console.log("input");
 		drawUserTypedOutput();
 	});
 
+//	document.getElementById("testbox").addEventListener('input', (event) => {
+//		console.log("input 2");
+//		drawUserTypedOutput();
+//	});
+
     inputArea.addEventListener('keydown', (event) => {
+		if(isEndPractice){
+			event.preventDefault();
+			return;
+		}
+
+		const str = inputArea.value;
+		console.log(str);
+		console.log("keydown", event.key);
 		// move cursor to the end of the text
-		const range = document.createRange();
-		const selection = window.getSelection();
-		range.selectNodeContents(inputArea);
-		range.collapse(false);
-		selection.removeAllRanges();
-		selection.addRange(range);
+//		const range = document.createRange();
+//		const selection = window.getSelection();
+//		range.selectNodeContents(inputArea);
+//		range.collapse(false);
+//		selection.removeAllRanges();
+//		selection.addRange(range);
 
 		if (event.key === 'Backspace') {
-			switch(inputArea.innerText.length){
+			switch(str.length){
 			case 0:
+				console.log("backspace 0");
 				event.preventDefault();
 				if(rowIdx === 0)break;
 				skipLineFeed = true;
 				--rowIdx;
 				colIdx = splittedText[rowIdx].length-1;
 				baseIdx -= splittedText[rowIdx].length;
-				inputArea.innerHTML = splittedText[rowIdx];
+				inputArea.value = userTypedText.slice(baseIdx, baseIdx+colIdx+1).join('');
 				drawScreen();
 				drawUserTypedOutput();
 				break;
 			case 1:
+				console.log("backspace 1");
 				event.preventDefault();
-				inputArea.innerHTML = '';
+				inputArea.value = '';
 				drawUserTypedOutput();
 				break;
 			}
@@ -102,19 +126,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 		if (event.key === 'Tab' || event.key === 'Enter') {
 			event.preventDefault();
-			inputArea.innerHTML += '&nbsp;';
-
-			// goto the end of the text
-			const range = document.createRange();
-			const selection = window.getSelection();
-			range.selectNodeContents(inputArea);
-			range.collapse(false);
-			selection.removeAllRanges();
-			selection.addRange(range);
+			inputArea.value += '\u00A0';
+			drawUserTypedOutput();
 		}
     });
 
-	inputArea.addEventListener('paste', (event) => {
+	document.addEventListener('paste', (event) => {
 		event.preventDefault();
 		console.log("paste");
 	});
@@ -124,12 +141,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		inputArea.focus();
 
 		// move cursor to the end of the text
-		const range = document.createRange();
-		const selection = window.getSelection();
-		range.selectNodeContents(inputArea);
-		range.collapse(false);
-		selection.removeAllRanges();
-		selection.addRange(range);
+//		const range = document.createRange();
+//		const selection = window.getSelection();
+//		range.selectNodeContents(inputArea);
+//		range.collapse(false);
+//		selection.removeAllRanges();
+//		selection.addRange(range);
 	});
 
 	inputArea.focus();
