@@ -115,9 +115,9 @@
         display.textContent = text;
         charCount.textContent = `Character Count (excluding spaces and newlines): ${trimmedText.length}`;
 
-        let strsize = 0;
+        let totalLength = 0;
         for (let i = 0; i < referenceText.length; i++) {
-            strsize += referenceText[i].length;
+            totalLength += referenceText[i].length;
         }
 
         let errorCount = 0;
@@ -137,7 +137,7 @@
             }
         }
 
-        const errorRateValue = (errorCount / strsize) * 100;
+        const errorRateValue = (errorCount / totalLength) * 100;
         errorRate.textContent = `Error Rate: ${errorRateValue.toFixed(2)}%`;
 
         const timeElapsedSeconds = (new Date() - startTime) / 1000;
@@ -189,6 +189,7 @@
 
 </body>
 </html>
+
 
 
 
