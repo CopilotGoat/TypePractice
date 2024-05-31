@@ -69,6 +69,10 @@ select{
     text-align: center;
     width: 100%;
 }
+#selPage {
+    display: flex;
+    justify-content: center;
+}
 @media screen and (max-width: 600px) {
     table {
         width: 80%;
