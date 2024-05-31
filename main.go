@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -102,5 +103,11 @@ func main() {
 		json += "]";
 		return c.String(http.StatusOK, json)
 	})
-	e.Logger.Fatal(e.StartTLS(":8080", "certificate.crt", "private.key"))
+	args := os.Args[1:]
+	if args[0] == "test" {
+		fmt.Println("========================================\nTest mode\n========================================")
+		e.Logger.Fatal(e.Start(":8080"))
+	} else {
+		e.Logger.Fatal(e.StartTLS(":8080", "certificate.crt", "private.key"))
+	}
 }

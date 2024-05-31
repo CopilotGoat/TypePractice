@@ -32,7 +32,7 @@ func (r *Record) GetMyRanking() int {
 
 func getRanking(boodId int, limit int, startRanking int) []Record {
 	records := make([]Record, 0)
-	res, _ := _db.Query("SELECT * FROM Records WHERE bookId = ? ORDER BY score", boodId)
+	res, _ := _db.Query("SELECT id, bookId, username, startTime, endTime, takenTime, score FROM Records WHERE bookId = ? ORDER BY score", boodId)
 	i := 0
 	last := startRanking + limit
 	for res.Next() {
