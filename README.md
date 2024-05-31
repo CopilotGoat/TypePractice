@@ -63,7 +63,8 @@ GET /ranking
     "username": "string",
     "startTime": 10,
     "endTime": 20,
-    "takenTime": 10
+    "takenTime": 10,
+    "score": 50
 },
 {
     "id": 1,
@@ -71,7 +72,8 @@ GET /ranking
     "username": "string",
     "startTime": 5,
     "endTime": 18,
-    "takenTime": 13
+    "takenTime": 13,
+    "score": 30
 }
 ```
 ### 결과 등록하기
@@ -83,7 +85,8 @@ POST /typing
     "username": "string",
     "bookId": 0,
     "startTime": 0,
-    "endTime": 0 //endTime > startTime
+    "endTime": 0, //endTime > startTime
+    "score": 0
 }
 ```
 해당 결과를 DB에 등록합니다. 위 모든 항목이 필수이며, endTime은 startTime보다 작을 수 없습니다. 등록 후 등록한 결과가 몇 위인지 반환합니다.
