@@ -24,7 +24,7 @@ func (r *Record) ToJson() string {
 	return fmt.Sprintf("{\"id\":%d,\"bookId\":%d,\"username\":\"%s\",\"startTime\":%d,\"endTime\":%d,\"takenTime\":%d, \"score\": %d}", r.Id, r.BookId, r.Username, r.StartTime, r.EndTime, r.TakenTime, r.Score)
 }
 func (r *Record) GetMyRanking() int {
-	res := _db.QueryRow("select a.r from (select id, rank() over(order by score) r from Records where bookId=?) a inner join Records b on b.id=a.id and a.id=?", r.BookId, r.Id)
+	res := _db.QueryRow("select a.r from (select id, rank() over(order by score desc) r from Records where bookId=?) a inner join Records b on b.id=a.id and a.id=?", r.BookId, r.Id)
 	var rank int
 	res.Scan(&rank)
 	return rank
@@ -32,7 +32,7 @@ func (r *Record) GetMyRanking() int {
 
 func getRanking(boodId int, limit int, startRanking int) []Record {
 	records := make([]Record, 0)
-	res, _ := _db.Query("SELECT id, bookId, username, startTime, endTime, takenTime, score FROM Records WHERE bookId = ? ORDER BY score", boodId)
+	res, _ := _db.Query("SELECT id, bookId, username, startTime, endTime, takenTime, score FROM Records WHERE bookId = ? ORDER BY score DESC", boodId)
 	i := 0
 	last := startRanking + limit
 	for res.Next() {
@@ -44,7 +44,7 @@ func getRanking(boodId int, limit int, startRanking int) []Record {
 			break
 		}
 		var record Record
-		res.Scan(&record.Id, &record.BookId, &record.Username, &record.StartTime, &record.EndTime, &record.TakenTime)
+		res.Scan(&record.Id, &record.BookId, &record.Username, &record.StartTime, &record.EndTime, &record.TakenTime, &record.Score)
 		records = append(records, record)
 	}
 	return records
