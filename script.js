@@ -5,6 +5,15 @@ const testText = "한글 타이핑 연습 문장입니다. 이 문장을 타이�
 tmpParagraph = initText;
 
 document.addEventListener('DOMContentLoaded', (event) => {
+	function getParameterByName(name, url = window.location.href) {
+		name = name.replace(/[\[\]]/g, '\\$&');
+		let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+			result = regex.exec(url);
+		if(!result)return null;
+		if(!result[2])return '';
+		return decodeURIComponent(result[2].replace(/\+/g, ' '));
+	}
+
     const userTypedOutput = document.getElementById('userTypedOutput');
 	const inputArea = document.getElementById('inputArea');
 	const textToType = document.getElementById('textToType');
@@ -15,13 +24,42 @@ document.addEventListener('DOMContentLoaded', (event) => {
 	let splittedText=[];
 	let rawIdx = 0, rowIdx = 0, colIdx = 0, baseIdx = 0;
 	let skipLineFeed = false, isEndPractice = false;
-	let startTime;
+	let startTime, endTime;
+	let isAtHome = getParameterByName("bookId") === null;
 
 	for (var i = 0; i < originalText.length; i++) {
 		const span = document.createElement('span');
 		span.classList.add('correct', 'invisible');
 		span.textContent = originalText[i];
 		textToType.appendChild(span);
+	}
+
+	
+	if(getParameterByName("bookId")==null){
+		originalText = "Start!";
+		drawScreen();
+	}
+	else{
+		fetch("https://ai.csnewcs.dev:8080/book?bookId="+getParameterByName("bookId"))
+			.then((response) => {
+				if(!response.ok){
+					throw new Error("Network response was not ok");
+				}
+				return response.text();
+			}).then((result) => {
+				console.log("result", result);
+				result = JSON.parse(
+					result.replace(/\r\\n/g, ' ')
+					.replace(/\r/g, '')
+					.replace(/\\\\/g, '\\')
+				);
+
+				originalText = result.content.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+				drawScreen();
+				console.log(splittedText);
+			}).catch((error) => {
+				console.error("error", error);
+			});
 	}
 
 	function isSameChar(a, b){
@@ -36,8 +74,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		colIdx = str.length - 1;
 		rawIdx = baseIdx + colIdx;
 
-		if(rawIdx >= originalText.length){
+		if(rawIdx >= originalText.length){ // end of the text
+			endTime = new Date();
 			keydownEventCallbackState = 2;
+			clearInterval(calculateKPMAndAccuracyIntervalID);
 			isEndPractice = true;
 			setTimeout(endPractice, 0);
 			return;
@@ -54,7 +94,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		for (var i = 0; i < str.length; i++) {
 			const span = document.createElement('span');
 //			console.log("D", userTypedText[baseIdx+i], originalText[baseIdx+i]);
-			span.classList.add(userTypedText[baseIdx+i] === originalText[baseIdx+i] ? 'correct' : 'incorrect');
+			span.classList.add(
+				userTypedText[baseIdx+i] === originalText[baseIdx+i]
+				|| (lang === "ko" && i === str.length-1)
+				? 'correct' : 'incorrect'
+			);
 			span.textContent = str[i];
 			userTypedOutput.appendChild(span);
 		}
@@ -251,7 +295,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		splittedText = [];
 		for(let i=0; i<res.length; ++i)
 			splittedText.push(originalText.slice(res[i], res[i+1]));
-		splittedText.push("< Done! >");
+		splittedText.push("< Done! Press any key to end >");
 		splittedText.push("");
 
 		textToType.innerHTML = '';
@@ -273,17 +317,34 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		});
 	}
 
-	originalText = testText;
-	drawScreen();
-	console.log(splittedText);
-
 	function endPractice(){
 		console.log("endPractice");
+		if(isAtHome){
+			document.location.href = "./practice.html";
+			return;
+		}
 	}
 
 	function isSpecialChar(c){
 		const specialCharRegex = /[^w\s]/;
 		return specialCharRegex.test(c) || c === '\u00A0';
+
+		const elapsedTime = (endTime - startTime);
+		const corrects = userTypedText.slice(0, rawIdx).filter((c, i) => c === originalText[i]);
+		let specialCharCount = 0, nonSpecialCharCount = 0;
+
+		corrects.forEach((c, i) => {
+			if(isSpecialChar(c))++specialCharCount;
+			else ++nonSpecialCharCount;
+		});
+
+		const tpms = ((lang === "en" ? nonSpecialCharCount / 5 : nonSpecialCharCount * 2) + specialCharCount)
+						* 60000 / elapsedTime;
+
+		const accuracy = 100 * userTypedText.slice(0, rawIdx)
+			.filter((c, i) => c === originalText[i]).length / (rawIdx);
+		document.getElementById('typingAccuracy').textContent = accuracy.toFixed(2);
+		document.getElementById('typingSpeed').textContent = tpms.toFixed(2);
 	}
 
 	function calculateKPMAndAccuracy(){
@@ -306,6 +367,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		document.getElementById('typingSpeed').textContent = tpms.toFixed(2);
 	}
 
-	setInterval(calculateKPMAndAccuracy, 16);
+	let calculateKPMAndAccuracyIntervalID = setInterval(calculateKPMAndAccuracy, 16);
+
 });
 
