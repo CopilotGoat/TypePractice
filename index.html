@@ -19,7 +19,7 @@
         </nav>
     </header>
 
-    <main>
+    <main id="main">
         <section id="home">
             <h2>Welcome to the Typing Practice Website</h2>
             <p>Improve your typing skills with our interactive typing practice tool.</p>
@@ -38,7 +38,7 @@
 
         <section id="results">
             <h2>Stats</h2>
-            <div id="results-display">
+            <div id="statDisplay">
                 <p>Speed: <span id="typingSpeed">0</span> TPM</p>
                 <p>Accuracy: <span id="typingAccuracy">100</span>%</p>
             </div>
@@ -48,6 +48,39 @@
     <footer>
         <p id="ffff">&copy; 2024 Typing Practice by CopilotGOAT</p>
     </footer>
+
+	<div id="resultScreenCopy" class="invisible">
+		<section>
+			<h2>Result</h2>
+			<div id="resultDisplay">
+				<div class="resultItem">
+					<span class="resultLable">Speed</span>
+					<span class="resultValue" id="resultTitle">0 TPM</span>
+				</div>
+				<div class="resultItem">
+					<span class="resultLable">Speed</span>
+					<span class="resultValue" id="resultSpeed">0 TPM</span>
+				</div>
+				<div class="resultItem">
+					<span class="resultLable">Accuracy</span>
+					<span class="resultValue" id="resultAccuracy">100%</span>
+				</div>
+				<div class="resultItem">
+					<span class="resultLable">Score</span>
+					<span class="resultValue" id="resultScore">0</span>
+				</div>
+			</div>
+
+		</section>
+
+		<section id="sectionPost">
+			<h2>Post to Ranking</h2>
+			<div id="postToRanking">
+				<input id="nameInput" class="inputText" type="text" placeholder="Enter your name"></input>
+				<button id="postButton" class="button">Post</button>
+			</div>
+		</section>
+	</div>
 
 
 	<div id="hiddenContainer" class="invisible"></div>

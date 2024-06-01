@@ -1,11 +1,14 @@
 #selectBox {
     background-color: white;
     border: 1px solid black;
-    margin: 20px;
+    margin: 1em;
 }
 .bookSelection {
     font-size: large;
     display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
 }
 .bookSelection button {
     opacity: 0;
@@ -14,8 +17,21 @@
     background-color: lightgray;
 }
 .bookSelection:hover button{
-    margin: 30px;
-    background-color: lightgray;
+/*    margin: 30px;
     opacity: 1;
-    background-color: white;
+    background-color: white;*/
+	width: 15%;
+	height: 2em;
+	opacity: 1;
+	margin: 0em 1em;
+/*	padding; 2em 2em;*/
+	border: 1px solid #ccc;
+	background-color: #4caf50;
+	color: white;
+	font-size: 1em;
+	cursor: pointer;
+}
+
+.bookSelection:hover button:hover{
+	background-color: #45a049;
 }

@@ -35,8 +35,10 @@
             let selection = document.createElement('div')
             selection.classList.add('bookSelection')
             selection.innerHTML = `
-                <h2>${book.title}</h2>
-                <p>${book.contentLength}</p>
+				<div>
+					<h2>${book.title}</h2>
+					<p>${book.contentLength}자</p>
+				</div>
                 <button onclick="selectBook(${book.id})">선택</button>
             `
             return selection
