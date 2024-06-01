@@ -1,0 +1,21 @@
+#selectBox {
+    background-color: white;
+    border: 1px solid black;
+    margin: 20px;
+}
+.bookSelection {
+    font-size: large;
+    display: flex;
+}
+.bookSelection button {
+    opacity: 0;
+}
+.bookSelection:hover {
+    background-color: lightgray;
+}
+.bookSelection:hover button{
+    margin: 30px;
+    background-color: lightgray;
+    opacity: 1;
+    background-color: white;
+}
