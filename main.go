@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -18,14 +19,15 @@ var _db *sql.DB
 func main() {
 	//make echo server on 80
 	e := echo.New()
-	origin := "*"
+	e.Use(middleware.CORS())
+	// origin := "*"
 	db, err := sql.Open("sqlite3", _sqlPath)
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
 	_db = db
 	e.GET("/book", func(c echo.Context) error {
-		c.Response().Header().Add("Access-Control-Allow-Origin", origin)
+		// c.Response().Header().Add("Access-Control-Allow-Origin", origin)
 		//param: bookId
 		bookId := c.QueryParam("bookId")
 		if bookId == "" {
@@ -49,11 +51,10 @@ func main() {
 		return c.String(http.StatusOK, book.ToJson())
 	})
 	e.POST("/typing", func(c echo.Context) error {
-		c.Response().Header().Add("Access-Control-Allow-Origin", origin)
-		//jsondata: username, bookId, startTime, endTime, score
-		// myRank := 0
+		// c.Response().Header().Add("Access-Control-Allow-Origin", origin)
 		var record Record
 		if err := c.Bind(&record); err != nil {
+			fmt.Println(err.Error())
 			return c.String(http.StatusBadRequest, err.Error())
 		}
 		if record.BookId == 0 || record.Username == "" || record.StartTime == 0 || record.EndTime == 0 || record.Score == 0 {
@@ -62,15 +63,15 @@ func main() {
 		if record.TakenTime = record.EndTime - record.StartTime; record.TakenTime < 0 {
 			return c.String(http.StatusBadRequest, "endTime should be greater than startTime")
 		}
-		if strings.Contains(record.Username, ";") || strings.Contains(record.Username, "--") || strings.Contains(record.Username, "\"") || strings.Contains(record.Username, "'"){
+		if strings.Contains(record.Username, ";") || strings.Contains(record.Username, "--") || strings.Contains(record.Username, "\"") || strings.Contains(record.Username, "'") {
 			return c.String(http.StatusBadRequest, "username should not contain sql")
 		}
 		record.AddToDB()
-		
+
 		return c.String(http.StatusOK, fmt.Sprintf("{\"rank\": %d}", record.GetMyRanking()))
 	})
 	e.GET("/ranking", func(c echo.Context) error {
-		c.Response().Header().Add("Access-Control-Allow-Origin", origin)
+		// c.Response().Header().Add("Access-Control-Allow-Origin", origin)
 		//param: bookId, limit, startRanking
 		bookId := c.QueryParam("bookId")
 		limit := c.QueryParam("limit")
@@ -100,7 +101,7 @@ func main() {
 				json += ","
 			}
 		}
-		json += "]";
+		json += "]"
 		return c.String(http.StatusOK, json)
 	})
 	args := os.Args[1:]
