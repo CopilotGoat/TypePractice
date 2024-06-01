@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 type Book struct {
@@ -13,7 +14,7 @@ type Book struct {
 }
 
 func (b *Book) ToJson() string {
-	s := fmt.Sprintf("{\"id\":%d,\"title\":\"%s\",\"content\":\"%s\",", b.id, b.title, b.content)
+	s := fmt.Sprintf("{\"id\":%d,\"title\":\"%s\",\"content\":\"%s\",", b.id, b.title, removeWrongString(b.content))
 	if b.contentLength.Valid {
 		s += fmt.Sprintf("\"contentLength\":%d}", b.contentLength.Int32)
 	} else {
@@ -39,4 +40,10 @@ func getBookById(id int) (Book, error) {
 		return book, err
 	}
 	return book, nil
+}
+func removeWrongString(str string) string {
+	str = strings.Replace(str, "\n", "\\n", -1)
+	str = strings.Replace(str, "\"", "\\\"", -1)
+	str = strings.Replace(str, "'", "\\'", -1)
+	return str
 }
