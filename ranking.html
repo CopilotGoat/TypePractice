@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="ranking.css">
+    <link rel="stylesheet" href="header.css">
+</head>
+<body>
+    <header>
+        <h1>Typing Practice Website</h1>
+        <nav>
+            <ul>
+                <li><a href="./index.html">홈</a></li>
+                <li><a href="./practice.html">Practice</a></li>
+                <li><a href="./ranking.html">랭킹</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div id="main">
+        <table id="ranking">
+            <thead>
+                <tr>
+                    <th>순위</th>
+                    <th>
+                        <select id="book" aria-label="어떤 랭킹?">
+                            <option value="0">책을 선택해주세요</option>
+                        </select>
+                    </th>
+                    <th>닉네임</th>
+                    <th>점수</th>
+                    <th>걸린시간</th>
+                </tr>
+            </thead>
+            <tbody id="rankingRow">
+            </tbody>
+        </table>
+        <div class='invisible' id="selPage">
+            <button id="previous" class="invisible">이전</button>
+            <p id="nowPage">1</p>
+            <button id="next">다음</button>
+        </div>
+    </div>
+    <script>
+        let page = 1
+        const apiUrl = 'https://ai.csnewcs.dev:8080/'
+        const bookSelect = document.getElementById('book')
+        const next = document.getElementById('next')
+        const previous = document.getElementById('previous')
+        const nowPage = document.getElementById('nowPage')
+        window.onload = fetch(apiUrl + 'book').then(res => res.json()).then(data => {
+            data.forEach(book => {
+                const option = document.createElement('option')
+                option.value = book.id
+                option.innerText = book.title
+                bookSelect.appendChild(option)
+            })
+            console.log(data)
+        })
+        bookSelect.onchange = () => {
+            page = 1
+            nowPage.innerHTML = page
+            let row = document.getElementById('rankingRow')
+            row.innerHTML = ''
+            fetch(apiUrl + 'ranking?limit=11&bookId=' + bookSelect.value).then(res => res.json()).then(data => {
+                console.log(data)
+                const info = document.createElement('td')
+                let length = data.length
+                if (length === 11) {
+                    length = 10
+                    const selPage = document.getElementById('selPage')
+                    selPage.classList.remove('invisible')
+                } else {
+                    const selPage = document.getElementById('selPage')
+                    selPage.classList.add('invisible')
+                }
+                addToTable(data)
+            })
+        }
+        next.onclick = () => {
+            fetch(apiUrl + 'ranking?limit=11&bookId=' + bookSelect.value + '&startRanking=' + (page*10 + 1)).then(res => res.json()).then(data => {
+                page += 1
+                previous.classList.remove('invisible')
+                nowPage.innerHTML = page
+                let length = data.length
+                if (length === 11) {
+                    length = 10
+                    const selPage = document.getElementById('selPage')
+                    selPage.classList.remove('invisible')
+                } else {
+                    next.classList.add('invisible')
+                }
+                addToTable(data, (page-1)*10)
+            })
+        }
+        previous.onclick = () => {
+            fetch(apiUrl + 'ranking?&bookId=' + bookSelect.value + '&startRanking=' + (page*10 - 19)).then(res => res.json()).then(data => {
+                next.classList.remove('invisible')
+                page -= 1
+                if (page === 1) {
+                    previous.classList.add('invisible')
+                }
+                nowPage.innerHTML = page
+                addToTable(data, (page-1)*10)
+            })
+        }
+        function addToTable(data, start=0) {
+            let row = document.getElementById('rankingRow')
+            row.innerHTML = ''
+            let length = data.length
+            length = length === 11 ? 10 : length
+            for (let i = 0; i < length; i++) {
+                const tr = document.createElement('tr')
+                tr.id = 'rankingRow'
+                const rank = document.createElement('td')
+                const username = document.createElement('td')
+                const score = document.createElement('td')
+                const takenTime = document.createElement('td')
+                const book = document.createElement('td')
+                rank.innerText = i + 1 + start
+                username.innerText =data[i].username
+                score.innerText =data[i].score
+                takenTime.innerText = data[i].takenTime
+                book.innerText = document.getElementById('book').options[document.getElementById('book').selectedIndex].text
+                tr.appendChild(rank)
+                tr.appendChild(book)
+                tr.appendChild(username)
+                tr.appendChild(score)
+                tr.appendChild(takenTime)
+                row.appendChild(tr)
+            }
+        }
+    </script>
+</body>
+</html>
