@@ -90,7 +90,6 @@ section {
 	height: 0;
 	opacity: 0;
 	position: absolute;
-	font-size: 0px;
 
 	-webkit-user-modify: read-write-plaintext-only;
 	autocorrect: off;
