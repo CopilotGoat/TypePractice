@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="ranking.css">
-    <link rel="stylesheet" href="header.css">
+    <link rel="stylesheet" href="../header.css">
 </head>
 <body>
     <header>
@@ -121,7 +121,7 @@
                 rank.innerText = i + 1 + start
                 username.innerText =data[i].username
                 score.innerText =data[i].score
-                takenTime.innerText = data[i].takenTime
+                takenTime.innerText = data[i].takenTime / 1000 + '초'
                 book.innerText = document.getElementById('book').options[document.getElementById('book').selectedIndex].text
                 tr.appendChild(rank)
                 tr.appendChild(book)
