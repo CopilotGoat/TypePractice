@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 	
 	if(getParameterByName("bookId")==null){
 		originalText = "Start!";
+		initDrawScreen();
 		drawScreen();
 		drawUserTypedOutput();
 	}else{
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 				originalText = result.content.replace(/\n/g, ' ').replace(/\s+/g, ' ');
 				title = result.title;
+				initDrawScreen();
 				drawScreen();
 				drawUserTypedOutput();
 //				console.log(splittedText);
@@ -96,7 +98,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 			return;
 		}
 
-		if(str.length)userTypedText[rawIdx] = str[colIdx];
+//		if(str.length)userTypedText[rawIdx] = str[colIdx];
+		if(str.length)for(let i=0; i<=colIdx; ++i)
+			userTypedText[baseIdx+i] = str[i];
 
 		userTypedOutput.innerHTML = '';
 		for (var i = 0; i < str.length; i++) {
@@ -270,15 +274,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		return res;
 	}
 
-	function drawScreen(){
+//	let splittedText = [];
+	function initDrawScreen(){
 		var res = getBreakIndex(textToType, originalText);
 		res.unshift(0);
-		splittedText = [];
 		for(let i=0; i<res.length; ++i)
 			splittedText.push(originalText.slice(res[i], res[i+1]));
 		splittedText.push("< Done! Press any key to end >");
 		splittedText.push("");
+	}
 
+	function drawScreen(){
 		textToType.innerHTML = '';
 
 		splittedText[rowIdx].split('').forEach((char, index) => {
