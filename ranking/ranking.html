@@ -121,7 +121,7 @@
                 rank.innerText = i + 1 + start
                 username.innerText =data[i].username
                 score.innerText =data[i].score
-                takenTime.innerText = data[i].takenTime
+                takenTime.innerText = data[i].takenTime / 1000 + '초'
                 book.innerText = document.getElementById('book').options[document.getElementById('book').selectedIndex].text
                 tr.appendChild(rank)
                 tr.appendChild(book)
