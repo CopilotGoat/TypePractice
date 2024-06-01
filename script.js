@@ -1,5 +1,7 @@
 const initText = "Ipsum dolor sit amet";
-const testText = "This is a sample text for typing practice. Type this text to improve your typing speed and accuracy. The correctly typed characters will appear in black, while incorrect characters will be shown in red. 한글 타이핑 연습 문장입니다. 이 문장을 타이핑해보세요. 키보드에서 타자를 칠 때 올바른 글자는 검정색으로 표시되고, 잘못된 글자는 빨간색으로 표시됩니다.";
+const lang = "ko";
+"This is a sample text for typing practice. Type this text to improve your typing speed and accuracy. The correctly typed characters will appear in black, while incorrect characters will be shown in red."
+const testText = "한글 타이핑 연습 문장입니다. 이 문장을 타이핑해보세요. 키보드에서 타자를 칠 때 올바른 글자는 검정색으로 표시되고, 잘못된 글자는 빨간색으로 표시됩니다.";
 tmpParagraph = initText;
 
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -12,11 +14,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let originalText = tmpParagraph;
 	let splittedText=[];
 	let rawIdx = 0, rowIdx = 0, colIdx = 0, baseIdx = 0;
-	let skipLineFeed = false;
-	let isEndPractice = false;
+	let skipLineFeed = false, isEndPractice = false;
+	let startTime;
 
 	for (var i = 0; i < originalText.length; i++) {
-		console.log(textToType.offsetWidth);
 		const span = document.createElement('span');
 		span.classList.add('correct', 'invisible');
 		span.textContent = originalText[i];
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		rawIdx = baseIdx + colIdx;
 
 		if(rawIdx >= originalText.length){
+			keydownEventCallbackState = 2;
 			isEndPractice = true;
 			setTimeout(endPractice, 0);
 			return;
@@ -84,50 +86,63 @@ document.addEventListener('DOMContentLoaded', (event) => {
 //		drawUserTypedOutput();
 //	});
 
+	let keydownEventCallbackState = 0;
     inputArea.addEventListener('keydown', (event) => {
-		if(isEndPractice){
-			event.preventDefault();
-			return;
-		}
+		setTimeout(calculateKPMAndAccuracy, 0);
+		switch(keydownEventCallbackState){
+		case 0:
+			startTime = new Date();
+			keydownEventCallbackState = 1;
+		case 1:
+			const str = inputArea.value;
+			console.log(str);
+			console.log("keydown", event.key);
+			// move cursor to the end of the text
+	//		const range = document.createRange();
+	//		const selection = window.getSelection();
+	//		range.selectNodeContents(inputArea);
+	//		range.collapse(false);
+	//		selection.removeAllRanges();
+	//		selection.addRange(range);
 
-		const str = inputArea.value;
-		console.log(str);
-		console.log("keydown", event.key);
-		// move cursor to the end of the text
-//		const range = document.createRange();
-//		const selection = window.getSelection();
-//		range.selectNodeContents(inputArea);
-//		range.collapse(false);
-//		selection.removeAllRanges();
-//		selection.addRange(range);
+			if (event.key === 'Backspace') {
+				switch(str.length){
+				case 0:
+					console.log("backspace 0");
+					event.preventDefault();
+					if(rowIdx === 0)break;
+					skipLineFeed = true;
+					--rowIdx;
+					colIdx = splittedText[rowIdx].length-1;
+					baseIdx -= splittedText[rowIdx].length;
+					inputArea.value = userTypedText.slice(baseIdx, baseIdx+colIdx+1).join('');
+					drawScreen();
+					drawUserTypedOutput();
+					break;
+				case 1:
+					console.log("backspace 1");
+					event.preventDefault();
+					inputArea.value = '';
+					drawUserTypedOutput();
+					break;
+				}
+			}
 
-		if (event.key === 'Backspace') {
-			switch(str.length){
-			case 0:
-				console.log("backspace 0");
+			if (event.key === 'Tab' || event.key === 'Enter') {
 				event.preventDefault();
-				if(rowIdx === 0)break;
-				skipLineFeed = true;
-				--rowIdx;
-				colIdx = splittedText[rowIdx].length-1;
-				baseIdx -= splittedText[rowIdx].length;
-				inputArea.value = userTypedText.slice(baseIdx, baseIdx+colIdx+1).join('');
-				drawScreen();
+				inputArea.value += '\u00A0';
 				drawUserTypedOutput();
-				break;
-			case 1:
-				console.log("backspace 1");
-				event.preventDefault();
-				inputArea.value = '';
-				drawUserTypedOutput();
+			}
+			break;
+		case 2:
+			if(event.key === 'Control' || event.key === 'Alt'
+				|| event.key === 'Shift' || event.key === 'Meta'
+				|| event.key === 'CapsLock' || event.key === 'Tab'
+				|| event.key === 'Enter'){
 				break;
 			}
-        }
-
-		if (event.key === 'Tab' || event.key === 'Enter') {
 			event.preventDefault();
-			inputArea.value += '\u00A0';
-			drawUserTypedOutput();
+			break;
 		}
     });
 
@@ -265,5 +280,32 @@ document.addEventListener('DOMContentLoaded', (event) => {
 	function endPractice(){
 		console.log("endPractice");
 	}
+
+	function isSpecialChar(c){
+		const specialCharRegex = /[^w\s]/;
+		return specialCharRegex.test(c) || c === '\u00A0';
+	}
+
+	function calculateKPMAndAccuracy(){
+		if(rawIdx < 1)return;
+		const elapsedTime = (new Date() - startTime);
+		const corrects = userTypedText.slice(0, rawIdx).filter((c, i) => c === originalText[i]);
+		let specialCharCount = 0, nonSpecialCharCount = 0;
+
+		corrects.forEach((c, i) => {
+			if(isSpecialChar(c))++specialCharCount;
+			else ++nonSpecialCharCount;
+		});
+
+		const tpms = ((lang === "en" ? nonSpecialCharCount / 5 : nonSpecialCharCount * 2) + specialCharCount)
+						* 60000 / elapsedTime;
+
+		const accuracy = 100 * userTypedText.slice(0, rawIdx)
+			.filter((c, i) => c === originalText[i]).length / (rawIdx);
+		document.getElementById('typingAccuracy').textContent = accuracy.toFixed(2);
+		document.getElementById('typingSpeed').textContent = tpms.toFixed(2);
+	}
+
+	setInterval(calculateKPMAndAccuracy, 16);
 });
 
