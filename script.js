@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 	}
 
 	
-	if(getParameterByName("bookId")==null){
-		originalText = "Start!";
+	if(isAtHome){
+		originalText = "이 문장을 따라 쳐봐요!";
 		initDrawScreen();
 		drawScreen();
 		drawUserTypedOutput();
@@ -101,6 +101,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
 //		if(str.length)userTypedText[rawIdx] = str[colIdx];
 		if(str.length)for(let i=0; i<=colIdx; ++i)
 			userTypedText[baseIdx+i] = str[i];
+
+		if(isAtHome && userTypedText.join('') === "즐겁다!"){
+			document.location.href = "./I_enjoy/index.html";
+			return;
+		}
 
 		userTypedOutput.innerHTML = '';
 		for (var i = 0; i < str.length; i++) {
