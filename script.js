@@ -426,6 +426,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
 		});
 	}
 
+	document.getElementById("disfruto").addEventListener('click', (event) => {
+		document.getElementById("home").innerHTML = `
+			<a href="./I_enjoy/index.html">
+				<img src="./I_enjoy/6964314775_494354581_94dc4f96135a1c96b1ccd42dddb1eb0c.png"></img>
+			</a>
+		`;
+	});
+
 	let calculateKPMAndAccuracyIntervalID = setInterval(calculateKPMAndAccuracy, 16);
 
 });
