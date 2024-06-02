@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="practice.css">
+    <link rel="stylesheet" href="header.css">
+    <title>practice</title>
+</head>
+<body>
+    <header>
+        <h1>Typing Practice Website</h1>
+        <nav>
+            <ul>
+                <li><a href="./index.html">홈</a></li>
+                <li><a href="./practice.html">Practice</a></li>
+                <li><a href="./ranking/ranking.html">랭킹</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div id="selectBox">
+
+    </div>
+    <script>
+        const apiUrl = 'https://ai.csnewcs.dev:8080/'
+        let selectedBook = null
+        window.onload = fetch(apiUrl + 'book').then(res => res.json()).then(data => {
+            body = document.getElementById('selectBox')
+            data.forEach(book => {
+                body.appendChild(createBookSelection(book))
+            })
+            console.log(data)
+        })
+        function createBookSelection(book) {
+            let selection = document.createElement('div')
+            selection.classList.add('bookSelection')
+            selection.innerHTML = `
+				<div>
+					<h2>${book.title}</h2>
+					<p>${book.contentLength}자</p>
+				</div>
+                <button onclick="selectBook(${book.id})">선택</button>
+            `
+            return selection
+        }
+        function selectBook(bookId) {
+            selectedBook = bookId
+            window.location.href = `./index.html?bookId=${bookId}`
+        }
+    </script>
+</body>
+</html>
